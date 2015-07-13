@@ -30,19 +30,21 @@ fi
 # An example is activemqcpp which depends on libssl.
 #
 export LIBRARY_PATH="$LIBRARY_PATH:$CONDA_DEFAULT_ENV/lib"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CONDA_DEFAULT_ENV/lib"
 if [[ -f SConstruct ]]; then
 	#
 	# Subvert scons environment cleaning
 	#
-	trap '{ rm -f "$CONDA_DEFAULT_ENV/bin/c++"; }' EXIT
-	CXXBIN=$(which c++)
-	cat > "$CONDA_DEFAULT_ENV/bin/c++" <<-EOT
+	CXX=${CXX:-c++}
+	trap '{ rm -f "$CONDA_DEFAULT_ENV/bin/$CXX"; }' EXIT
+	CXXBIN=$(which $CXX)
+	cat > "$CONDA_DEFAULT_ENV/bin/$CXX" <<-EOT
 		#!/bin/bash
 		export LIBRARY_PATH="$LIBRARY_PATH"
 		exec "$CXXBIN" "\$@"
 	EOT
-	chmod +x "$CONDA_DEFAULT_ENV/bin/c++"
-	cat $CONDA_DEFAULT_ENV/bin/c++
+	chmod +x "$CONDA_DEFAULT_ENV/bin/$CXX"
+	cat $CONDA_DEFAULT_ENV/bin/$CXX
 fi
 
 PRODUCT=$(basename ups/*.table .table)

@@ -33,9 +33,16 @@ internal_products = set("python swig libevent flask twisted scons numpy protobuf
 # Products to skip alltogether (i.e., don't build, don't make a dependency)
 skip_products = set("anaconda afwdata".split())
 
+# Toolchain dependencies (i.e., libgcc if the code has been built with conda's gcc).
+# setup_toolchain() will add apropriate packages here.
+#
+# FIXME: when dependencies are split into run/build, toolchain_deps should be split
+# into two as well (build <- gcc, run <- libgcc).
+toolchain_deps = set()
+
 # Products that need to be prefixed with our prefix to avoid collisions
 # Products whose Conda name will _not_ be prefixed with out namespace prefix
-dont_prefix_products = set("legacy_configs".split()) | internal_products
+dont_prefix_products = set("legacy_configs libgcc".split()) | internal_products
 lsst_prefix="lsst-"
 
 # A specific mapping between an EUPS product name and Conda product name. Takes
@@ -579,6 +586,7 @@ def gen_conda_package(product, sha, eups_version, eups_deps):
 	if eups_deps & internal_products:	# if we have any of the internal dependencies, make sure we depend on legacy_config where their .cfg and .table files are
 		eups_deps.add('legacy_configs')
 	eups_deps -= skip_products					# skip unwanted dependencies
+	eups_deps |= toolchain_deps					# add toolchain dependencies (i.e., gcc, etc.)
 	deps =  [ conda_name_for(prod) for prod in eups_deps ]		# transform to Anaconda product names
 	deps += add_missing_deps(conda_name, output_dir)		# manually add any missing dependencies
 
@@ -826,6 +834,18 @@ def load_manifest(fn):
 
 		yield (product, sha, version, deps)
 
+def setup_toolchain():
+	# Check if we're using conda-delivered compiler
+	ret = subprocess.check_output(['conda', 'list', 'gcc', '--json']).strip()
+	if ret == "{}":
+		return
+
+	# Embed dependency on runtime libs
+	# Don't need to check the version since libgcc is backwards compatible.
+	toolchain_deps.add("libgcc")
+
+	print "Detected conda-delivered gcc; will use it."
+	print "  ==> adding libgcc as dependency of generated packages."
 
 def test_release_db():
 	db = ReleaseDB()
@@ -1039,6 +1059,9 @@ if __name__ == "__main__":
 	# Make sure channels are in ~/.condarc
 	if not conda_knows_our_channels():
 		exit(-1)
+
+	# Detect/adjust toolchain
+	setup_toolchain()
 
 	# Load the built products cache database
 	db = ReleaseDB()
