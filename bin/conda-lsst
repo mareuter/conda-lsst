@@ -102,6 +102,7 @@ override_gitrev = {
 from conda_build.config import croot
 channels = [
 	'file://%s/' % croot,
+	'http://eupsforge.net/conda/mjuric/',
 	'http://eupsforge.net/conda/dev/',
 ]
 
