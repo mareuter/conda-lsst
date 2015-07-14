@@ -21,6 +21,14 @@ if [[ "$OSTYPE" == darwin* ]]; then
 	export ARCHFLAGS='-headerpad_max_install_names'
 fi
 
+if [[ -f "$CONDA_DEFAULT_ENV/lib/libstdc++.so.6" ]]; then
+	#
+	# We're using a conda-supplied standard library (and probably
+	# the compiler).
+	#
+	export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CONDA_DEFAULT_ENV/lib"
+fi
+
 # Add Anaconda libs to LIBRARY_PATH; otherwise, the linker can't resolve
 # the following situation:
 #
@@ -30,7 +38,6 @@ fi
 # An example is activemqcpp which depends on libssl.
 #
 export LIBRARY_PATH="$LIBRARY_PATH:$CONDA_DEFAULT_ENV/lib"
-export LD_LIBRARY_PATH="/home/mjuric/projects/eupsforge/lsstsw/stack/Linux64/gcc/4.8.5/lib64:$LD_LIBRARY_PATH"
 if [[ -f SConstruct ]]; then
 	#
 	# Subvert scons environment cleaning

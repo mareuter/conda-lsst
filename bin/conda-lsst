@@ -835,16 +835,25 @@ def load_manifest(fn):
 		yield (product, sha, version, deps)
 
 def setup_toolchain():
-	# Check if we're using conda-delivered compiler
-#	ret = subprocess.check_output(['conda', 'list', 'gcc', '--json']).strip()
-#	if ret == "{}":
-#		return
+	# This code is only supported on Linux right now
+	if not sys.platform.startswith('linux'):
+		return
+
+	# test if c++ is in the default location (/usr/bin/c++ or /bin/c++)
+	# if it's not, assume this is a build with an external compiler and
+	# add 'libgcc' to the list of dependencies.
+	from distutils.spawn import find_executable
+	gcc = find_executable("c++")
+	if gcc in ['/usr/bin/c++', '/bin/c++']:
+		return
 
 	# Embed dependency on runtime libs
 	# Don't need to check the version since libgcc is backwards compatible.
+	# FIXME: we should really check that the compiler version <= available
+	# libgcc version.
 	toolchain_deps.add("libgcc")
 
-	print "Detected conda-delivered gcc; will use it."
+	print "Detected non-system compiler (%s):" % gcc
 	print "  ==> adding libgcc as dependency of generated packages."
 
 def test_release_db():
@@ -933,6 +942,9 @@ def build_manifest_for_products(top_level_products):
 	return manifest
 
 def main_build(args):
+	# Detect/adjust toolchain
+	setup_toolchain()
+
 	# Get the (ordered) list of EUPS products to build
 	manifest = build_manifest_for_products(args.products)
 
@@ -1059,9 +1071,6 @@ if __name__ == "__main__":
 	# Make sure channels are in ~/.condarc
 	if not conda_knows_our_channels():
 		exit(-1)
-
-	# Detect/adjust toolchain
-	setup_toolchain()
 
 	# Load the built products cache database
 	db = ReleaseDB()
