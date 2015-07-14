@@ -30,7 +30,7 @@ fi
 # An example is activemqcpp which depends on libssl.
 #
 export LIBRARY_PATH="$LIBRARY_PATH:$CONDA_DEFAULT_ENV/lib"
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$CONDA_DEFAULT_ENV/lib"
+export LD_LIBRARY_PATH="/home/mjuric/projects/eupsforge/lsstsw/stack/Linux64/gcc/4.8.5/lib64:$LD_LIBRARY_PATH"
 if [[ -f SConstruct ]]; then
 	#
 	# Subvert scons environment cleaning

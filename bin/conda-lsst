@@ -836,9 +836,9 @@ def load_manifest(fn):
 
 def setup_toolchain():
 	# Check if we're using conda-delivered compiler
-	ret = subprocess.check_output(['conda', 'list', 'gcc', '--json']).strip()
-	if ret == "{}":
-		return
+#	ret = subprocess.check_output(['conda', 'list', 'gcc', '--json']).strip()
+#	if ret == "{}":
+#		return
 
 	# Embed dependency on runtime libs
 	# Don't need to check the version since libgcc is backwards compatible.
