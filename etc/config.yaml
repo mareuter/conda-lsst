@@ -205,6 +205,6 @@ our_channel_regex: '^(?:https?://eupsforge.net/conda/|https?://research.majuric.
 #
 upload:
   server:    'lsst-dev.ncsa.illinois.edu'
-  dir_base:  '/home/mjuric/public_html/conda'
+  dir_base:  '/home/mareuter/public_html/conda'
   conda:     '/ssd/mjuric/projects/conda-lsst/miniconda/bin/conda'
 
